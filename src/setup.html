@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; img-src 'self' data: file:;">
+    <title>图片搜集器 - 初始化设置</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #D4AF37;
+            --primary-light: #FDF5E6;
+            --primary-dark: #B8860B;
+            --accent: #FFD700;
+            --success: #10B981;
+            --error: #EF4444;
+            --text: #2C1810;
+            --text-light: #5C4033;
+            --text-muted: #8B7355;
+            --border: #DEB887;
+            --bg: #FFF8DC;
+            --bg-card: #FFFAF0;
+            --bg-hover: #FFF5E1;
+            --shadow-sm: 0 2px 4px rgba(139,69,19,0.1);
+            --shadow-md: 0 4px 12px rgba(139,69,19,0.15);
+            --shadow-lg: 0 8px 24px rgba(139,69,19,0.2);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            font-family: "Microsoft YaHei", "Segoe UI", -apple-system, sans-serif;
+            background: linear-gradient(135deg, var(--bg) 0%, var(--primary-light) 100%);
+            color: var(--text);
+        }
+
+        .container {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+        }
+
+        .setup-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: 30px 40px;
+            width: 520px;
+            max-width: 90%;
+            box-shadow: var(--shadow-lg);
+            border: 2px solid var(--primary);
+        }
+
+        .setup-header {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .setup-logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 16px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary);
+            box-shadow: var(--shadow-md);
+        }
+
+        .setup-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 4px;
+        }
+
+        .setup-subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .setup-content {
+            margin-bottom: 24px;
+        }
+
+        .content-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 12px;
+        }
+
+        .path-group {
+            margin-bottom: 16px;
+        }
+
+        .path-label {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-light);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .path-label .icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            object-fit: cover;
+        }
+
+        .path-input-wrap {
+            display: flex;
+            gap: 8px;
+        }
+
+        .path-input {
+            flex: 1;
+            padding: 10px 14px;
+            background: var(--bg);
+            border: 2px solid var(--border);
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            font-family: inherit;
+            color: var(--text);
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        .path-input:focus {
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(212,175,55,0.15);
+        }
+
+        .path-btn {
+            padding: 10px 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .path-btn:hover {
+            background: var(--primary-dark);
+        }
+
+        .path-btn .icon {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            object-fit: cover;
+        }
+
+        .info-box {
+            background: var(--primary-light);
+            border: 1px solid var(--primary);
+            border-radius: var(--radius-md);
+            padding: 12px;
+            margin-top: 16px;
+        }
+
+        .info-box-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--primary-dark);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .info-box-title .icon {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            object-fit: cover;
+        }
+
+        .info-box ul {
+            margin: 0;
+            padding-left: 18px;
+            font-size: 12px;
+            color: var(--text-light);
+            line-height: 1.7;
+        }
+
+        .setup-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .footer-hint {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .btn-exit {
+            background: transparent;
+            color: var(--text-muted);
+            border: none;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .btn-exit:hover {
+            background: rgba(0,0,0,0.05);
+            color: var(--error);
+        }
+
+        .setup-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn .icon {
+            width: 18px;
+            height: 18px;
+            border-radius: 4px;
+            object-fit: cover;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: var(--bg);
+            color: var(--text-light);
+            border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-hover);
+            border-color: var(--primary);
+        }
+
+        .loading-spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .welcome-step {
+            text-align: center;
+        }
+
+        .welcome-icon {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--primary);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .welcome-text {
+            font-size: 14px;
+            color: var(--text-light);
+            line-height: 1.7;
+            max-width: 380px;
+            margin: 0 auto;
+        }
+
+        .success-step {
+            text-align: center;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid var(--success);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .success-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--success);
+            margin-bottom: 10px;
+        }
+
+        .success-text {
+            font-size: 14px;
+            color: var(--text-light);
+            line-height: 1.7;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(20px);
+            background: var(--text);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 500;
+            box-shadow: var(--shadow-lg);
+            z-index: 9999;
+            opacity: 0;
+            transition: all 0.25s ease;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast.error {
+            background: var(--error);
+        }
+
+        .toast.success {
+            background: var(--success);
+        }
+
+        .step-content { display: none; }
+        .step-content.active { display: block; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="setup-card">
+            <div class="setup-header">
+                <img class="setup-logo" id="appLogo" src="" alt="财神">
+                <h1 class="setup-title">图片搜集器</h1>
+                <p class="setup-subtitle">v2.0.0 初始化设置</p>
+            </div>
+
+            <div class="setup-content">
+                <!-- 步骤1: 欢迎 -->
+                <div class="step-content active" id="step1">
+                    <div class="welcome-step">
+                        <h2 class="content-title">欢迎使用图片搜集器</h2>
+                        <p class="welcome-text">
+                            这是一款功能强大的图片管理工具，可以帮助您快速扫描、整理和管理电脑中的所有图片。
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 步骤2: 设置目录 -->
+                <div class="step-content" id="step2">
+                    <h2 class="content-title">选择数据存储位置</h2>
+                    
+                    <div class="path-group">
+                        <div class="path-label">
+                            <img class="icon" id="folderIcon" src="" alt="">
+                            <span>主目录</span>
+                        </div>
+                        <div class="path-input-wrap">
+                            <input type="text" class="path-input" id="mainDirInput" placeholder="选择一个文件夹..." readonly>
+                            <button class="path-btn" id="selectMainDirBtn">
+                                <img class="icon" id="browseIcon" src="" alt="">
+                                浏览
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="info-box">
+                        <div class="info-box-title">
+                            <img class="icon" id="infoIcon" src="" alt="">
+                            <span>程序将自动创建以下文件夹</span>
+                        </div>
+                        <ul>
+                            <li><b>data/</b> - 用户数据、收藏夹</li>
+                            <li><b>cache/</b> - 缩略图缓存</li>
+                            <li><b>downloads/</b> - 下载保存位置</li>
+                            <li><b>logs/</b> - 日志文件</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- 步骤3: 完成 -->
+                <div class="step-content" id="step3">
+                    <div class="success-step">
+                        <div style="width:80px;height:80px;margin:0 auto 20px;border-radius:50%;background:linear-gradient(135deg,#10B981,#059669);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-lg);">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </div>
+                        <h2 class="success-title">设置完成！</h2>
+                        <p class="success-text">
+                            恭喜！您已成功完成初始化配置。<br>
+                            点击下方按钮开始使用图片搜集器。
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="setup-footer">
+                <div class="footer-left">
+                    <button class="btn-exit" id="exitBtn">退出</button>
+                </div>
+                <div class="setup-actions">
+                    <button class="btn btn-secondary" id="prevBtn" style="display:none;">
+                        <img class="icon" id="prevIcon" src="" alt="">
+                        上一步
+                    </button>
+                    <button class="btn btn-primary" id="nextBtn">
+                        <span id="nextBtnText">开始设置</span>
+                        <div class="loading-spinner" id="loadingSpinner" style="display:none;"></div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const ICON_PATH = 'C:\\Users\\ZTSK\\Downloads\\财神爷捧大金元.png';
+        
+        const state = {
+            currentStep: 1,
+            totalSteps: 3,
+            mainDir: '',
+            defaults: null
+        };
+
+        // 设置财神图标
+        function setGoddessIcon(imgId) {
+            const img = document.getElementById(imgId);
+            if (img) img.src = ICON_PATH;
+        }
+
+        // 初始化图标
+        function initIcons() {
+            const iconIds = ['appLogo', 'folderIcon', 'browseIcon', 'infoIcon', 'prevIcon'];
+            iconIds.forEach(setGoddessIcon);
+        }
+
+        // Toast 提示
+        function showToast(msg, type = '') {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.className = 'toast show' + (type ? ' ' + type : '');
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        // 更新按钮状态
+        function updateStepDisplay() {
+            // 切换步骤内容显示
+            document.querySelectorAll('.step-content').forEach((el, i) => {
+                el.classList.toggle('active', i + 1 === state.currentStep);
+            });
+
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const nextBtnText = document.getElementById('nextBtnText');
+
+            prevBtn.style.display = state.currentStep > 1 ? 'flex' : 'none';
+            
+            if (state.currentStep === state.totalSteps) {
+                nextBtnText.textContent = '开始使用';
+            } else if (state.currentStep === 1) {
+                nextBtnText.textContent = '开始设置';
+            } else {
+                nextBtnText.textContent = '下一步';
+            }
+        }
+
+        // 选择目录
+        async function selectDirectory() {
+            try {
+                const dir = await window.electronAPI.selectDirectory();
+                if (dir) {
+                    document.getElementById('mainDirInput').value = dir;
+                    state.mainDir = dir;
+                }
+            } catch (e) {
+                console.error('选择目录失败:', e);
+                showToast('选择目录失败', 'error');
+            }
+        }
+
+        // 创建目录
+        async function createDirectories() {
+            try {
+                document.getElementById('loadingSpinner').style.display = 'block';
+                document.getElementById('nextBtnText').style.display = 'none';
+                
+                const result = await window.electronAPI.createSetupWithMainDir(state.mainDir);
+
+                if (!result.success) {
+                    showToast('初始化失败: ' + result.message, 'error');
+                    return false;
+                }
+
+                return true;
+            } catch (e) {
+                console.error('创建目录失败:', e);
+                showToast('初始化失败', 'error');
+                return false;
+            } finally {
+                document.getElementById('loadingSpinner').style.display = 'none';
+                document.getElementById('nextBtnText').style.display = 'inline';
+            }
+        }
+
+        // 下一步
+        async function handleNext() {
+            if (state.currentStep === 1) {
+                state.currentStep = 2;
+                updateStepDisplay();
+            } else if (state.currentStep === 2) {
+                if (!state.mainDir) {
+                    showToast('请选择一个文件夹', 'error');
+                    return;
+                }
+                
+                const success = await createDirectories();
+                if (success) {
+                    state.currentStep = 3;
+                    updateStepDisplay();
+                }
+            } else if (state.currentStep === 3) {
+                window.location.href = 'index.html';
+            }
+        }
+
+        // 上一步
+        function handlePrev() {
+            if (state.currentStep > 1) {
+                state.currentStep--;
+                updateStepDisplay();
+            }
+        }
+
+        // 退出应用
+        function handleExit() {
+            window.electronAPI.exitApp();
+        }
+
+        // 事件绑定
+        function bindEvents() {
+            document.getElementById('nextBtn').addEventListener('click', handleNext);
+            document.getElementById('prevBtn').addEventListener('click', handlePrev);
+            document.getElementById('exitBtn').addEventListener('click', handleExit);
+            document.getElementById('selectMainDirBtn').addEventListener('click', selectDirectory);
+        }
+
+        // 初始化
+        function init() {
+            initIcons();
+            updateStepDisplay();
+            bindEvents();
+        }
+
+        init();
+    </script>
+</body>
+</html>

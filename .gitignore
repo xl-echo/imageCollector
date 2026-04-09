@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-new/
+dist-pkg/
+out/
+
+# Electron Builder
+*.blockmap
+*.exe
+*.dmg
+*.deb
+*.AppImage
+
+# Logs
+*.log
+logs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Environment
+.env
+.env.local
+
+# Temp
+*.tmp
+*.bak
