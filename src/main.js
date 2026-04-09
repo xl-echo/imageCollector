@@ -909,6 +909,31 @@ function registerIpcHandlers() {
         return generateThumbnail(imagePath);
     });
 
+    ipcMain.handle('get-image-data-url', async (event, { imagePath, maxDim }) => {
+        const nativeImage = require('electron').nativeImage;
+        const fs = require('fs');
+        try {
+            if (!fs.existsSync(imagePath)) return null;
+            let img = nativeImage.createFromPath(imagePath);
+            if (img.isEmpty()) return null;
+            
+            // 缩放
+            let size = img.getSize();
+            if (size.width > maxDim || size.height > maxDim) {
+                const scale = maxDim / Math.max(size.width, size.height);
+                img = img.resize({
+                    width: Math.round(size.width * scale),
+                    height: Math.round(size.height * scale),
+                    quality: 'low'
+                });
+            }
+            
+            return img.toDataURL('image/png');
+        } catch (e) {
+            return null;
+        }
+    });
+
     ipcMain.handle('get-thumbnails', async (event, imagePaths) => {
         writeLog('DEBUG', 'IPC', `get-thumbnails 被调用，图片数: ${imagePaths.length}`);
         const thumbnails = {};

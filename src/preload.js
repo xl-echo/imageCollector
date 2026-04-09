@@ -147,6 +147,12 @@ contextBridge.exposeInMainWorld('electronAPI', {
         return ipcRenderer.invoke('get-thumbnail', imagePath);
     },
 
+    // ===== 二维码检测 =====
+    getImageDataUrl: (imagePath, maxDim) => {
+        rendererLog('DEBUG', 'Preload', `getImageDataUrl 被调用: ${imagePath.substring(0, 50)}...`);
+        return ipcRenderer.invoke('get-image-data-url', { imagePath, maxDim: maxDim || 300 });
+    },
+
     // ===== 收藏 =====
     getFavorites:   (username) => {
         rendererLog('DEBUG', 'Preload', `getFavorites 被调用: ${username}`);

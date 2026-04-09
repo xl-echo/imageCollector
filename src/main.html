@@ -712,7 +712,7 @@
 
         /* ========== 预览面板 ========== */
         .preview-panel {
-            width: 300px;
+            width: 380px;
             background: var(--bg-card);
             border-left: 1px solid var(--border);
             padding: 16px;
@@ -726,7 +726,9 @@
         .preview-panel.hidden { display: none; }
 
         .preview-img-wrap {
-            aspect-ratio: 4/3;
+            width: 100%;
+            min-height: 260px;
+            max-height: 400px;
             background: var(--bg);
             border-radius: var(--radius-lg);
             overflow: hidden;
@@ -737,7 +739,9 @@
 
         .preview-img {
             max-width: 100%;
-            max-height: 100%;
+            max-height: 400px;
+            width: auto;
+            height: auto;
             object-fit: contain;
         }
 
@@ -1301,6 +1305,11 @@
             <span>收藏</span>
             <span class="count" id="countFavorite">0</span>
         </div>
+        <div class="nav-item" data-filter="qrcode">
+            <img src="" class="nav-icon qr-icon" alt="" style="width:16px;height:16px;border-radius:4px;object-fit:cover;">
+            <span>二维码</span>
+            <span class="count" id="countQrcode">0</span>
+        </div>
 
         <div class="nav-divider"></div>
         <div class="nav-header">按分辨率</div>
@@ -1352,10 +1361,10 @@
             <div class="page-size-control">
                 <span>每页</span>
                 <select id="pageSizeSelect" class="page-size-select">
-                    <option value="10">10</option>
-                    <option value="20">20</option>
-                    <option value="30">30</option>
                     <option value="50" selected>50</option>
+                    <option value="100">100</option>
+                    <option value="200">200</option>
+                    <option value="500">500</option>
                 </select>
                 <span>条</span>
             </div>
@@ -1533,6 +1542,7 @@
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
+<script src="./jsQR.js"></script>
 <script>
 // ========================================
 // 状态管理 (v2.0.0)
@@ -1579,6 +1589,7 @@ const ICONS = {
     prevPage: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`,
     nextPage: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`,
     scanHeader: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
+    qrcode: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="3" height="3"/><rect x="18" y="18" width="3" height="3"/><rect x="14" y="18" width="3" height="3"/><rect x="18" y="14" width="3" height="3"/></svg>`,
 };
 
 // 将 SVG 转为 data URI
@@ -1594,6 +1605,7 @@ const state = {
     filtered: [],           // 过滤后的图片 (用于显示)
     selected: new Map(),    // 选中的图片 (path -> img)
     favorites: new Map(),   // 收藏的图片 (path -> img)
+    qrcodes: new Set(),     // 二维码图片的 path 集合
     isScanning: false,
     selectedDrives: ['C:'],
     currentFilter: 'all',
@@ -1663,6 +1675,7 @@ const els = {
     statusMsg: document.getElementById('statusMsg'),
     countAll: document.getElementById('countAll'),
     countFavorite: document.getElementById('countFavorite'),
+    countQrcode: document.getElementById('countQrcode'),
     count4k: document.getElementById('count4k'),
     count2k: document.getElementById('count2k'),
     count1080p: document.getElementById('count1080p')
@@ -1709,7 +1722,7 @@ function initIcons() {
     // 侧边栏导航 - 全部图片
     setSvgIcon('navIcon', ICONS.all);  // first nav-icon
     document.querySelectorAll('.nav-icon').forEach((el, i) => {
-        const navMap = [ICONS.all, ICONS.favorite, ICONS.res4k, ICONS.res2k, ICONS.res1080];
+        const navMap = [ICONS.all, ICONS.favorite, ICONS.qrcode, ICONS.res4k, ICONS.res2k, ICONS.res1080];
         el.src = svgToDataUri(navMap[i] || ICONS.all);
     });
     // 空状态占位
@@ -1806,6 +1819,7 @@ function getResolutionLevel(width, height) {
 function isResolutionMatch(img, filter) {
     if (filter === 'all') return true;
     if (filter === 'favorite') return state.favorites.has(img.path);
+    if (filter === 'qrcode') return state.qrcodes.has(img.path);
 
     const w = img.width || 0;
     const h = img.height || 0;
@@ -1856,6 +1870,7 @@ async function toggleFavorite(img) {
 function updateFavoriteCount() {
     els.favoriteCount.textContent = state.favorites.size;
     els.countFavorite.textContent = state.favorites.size;
+    els.countQrcode.textContent = state.qrcodes.size;
 }
 
 function updateCardFavoriteState(path) {
@@ -1995,6 +2010,8 @@ function updateStats() {
     els.count4k.textContent = count4k;
     els.count2k.textContent = count2k;
     els.count1080p.textContent = count1080p;
+    els.countFavorite.textContent = state.favorites.size;
+    els.countQrcode.textContent = state.qrcodes.size;
     
     updatePreviewNavInfo();
 }
@@ -2563,30 +2580,27 @@ function updatePreview(img, idx = null) {
     state.currentPreview = img;
     state.previewIndex = idx !== null ? idx : state.filtered.findIndex(i => i.path === img.path);
 
+    // 详情预览使用较大尺寸图片（600px）
     if (state.thumbnailCache.has(img.path)) {
         previewImgWrap.innerHTML = `<img class="preview-img" src="${state.thumbnailCache.get(img.path)}" alt="">`;
-    } else {
-        previewImgWrap.innerHTML = `<img src="${svgToDataUri(ICONS.placeholder)}" class="preview-placeholder" style="width:48px;height:48px;opacity:0.3;">`;
-        window.electronAPI.getThumbnail(img.path).then(dataUrl => {
-            if (dataUrl) {
+        // 异步加载高清版本替换
+        window.electronAPI.getImageDataUrl(img.path, 600).then(dataUrl => {
+            if (dataUrl && state.currentPreview && state.currentPreview.path === img.path) {
                 state.thumbnailCache.set(img.path, dataUrl);
-                if (state.currentPreview && state.currentPreview.path === img.path) {
-                    previewImgWrap.innerHTML = `<img class="preview-img" src="${dataUrl}" alt="">`;
-                }
+                previewImgWrap.innerHTML = `<img class="preview-img" src="${dataUrl}" alt="">`;
+            }
+        }).catch(() => {});
+    } else {
+        previewImgWrap.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;width:100%;height:200px;"><div class="load-more-spinner"></div></div>`;
+        window.electronAPI.getImageDataUrl(img.path, 600).then(dataUrl => {
+            if (dataUrl && state.currentPreview && state.currentPreview.path === img.path) {
+                state.thumbnailCache.set(img.path, dataUrl);
+                previewImgWrap.innerHTML = `<img class="preview-img" src="${dataUrl}" alt="">`;
             } else {
-                // 缩略图加载失败，使用原图路径
-                console.warn('缩略图加载失败，使用原图:', img.path);
-                const fileUrl = 'file:///' + img.path.replace(/\\/g, '/');
-                if (state.currentPreview && state.currentPreview.path === img.path) {
-                    previewImgWrap.innerHTML = `<img class="preview-img" src="${fileUrl}" alt="" onerror="this.parentElement.innerHTML='<img src=\\'${svgToDataUri(ICONS.placeholder)}\\' style=\\'width:48px;height:48px;opacity:0.5;\\'>'">`;
-                }
+                previewImgWrap.innerHTML = `<img src="${svgToDataUri(ICONS.placeholder)}" class="preview-placeholder" style="width:48px;height:48px;opacity:0.3;">`;
             }
-        }).catch(err => {
-            console.error('缩略图请求异常:', err);
-            const fileUrl = 'file:///' + img.path.replace(/\\/g, '/');
-            if (state.currentPreview && state.currentPreview.path === img.path) {
-                previewImgWrap.innerHTML = `<img class="preview-img" src="${fileUrl}" alt="" onerror="this.parentElement.innerHTML='<img src=\\'${svgToDataUri(ICONS.placeholder)}\\' style=\\'width:48px;height:48px;opacity:0.5;\\'>'">`;
-            }
+        }).catch(() => {
+            previewImgWrap.innerHTML = `<img src="${svgToDataUri(ICONS.placeholder)}" class="preview-placeholder" style="width:48px;height:48px;opacity:0.3;">`;
         });
     }
 
@@ -2633,13 +2647,24 @@ function showFullscreen(idx) {
 
     const fullscreenImg = document.getElementById('fullscreenImg');
     
-    if (state.thumbnailCache.has(img.path)) {
-        fullscreenImg.src = state.thumbnailCache.get(img.path);
-    } else {
-        // 使用原图路径
+    // 全屏预览使用高清图片（800px），不用缩略图
+    fullscreenImg.src = '';
+    window.electronAPI.getImageDataUrl(img.path, 800).then(dataUrl => {
+        if (dataUrl && state.currentPreview && state.currentPreview.path === img.path) {
+            fullscreenImg.src = dataUrl;
+        } else {
+            // 降级使用缩略图
+            if (state.thumbnailCache.has(img.path)) {
+                fullscreenImg.src = state.thumbnailCache.get(img.path);
+            } else {
+                const fileUrl = 'file:///' + img.path.replace(/\\/g, '/');
+                fullscreenImg.src = fileUrl;
+            }
+        }
+    }).catch(() => {
         const fileUrl = 'file:///' + img.path.replace(/\\/g, '/');
         fullscreenImg.src = fileUrl;
-    }
+    });
 
     document.getElementById('fullscreenName').textContent = img.name;
     document.getElementById('fullscreenSize').textContent = img.sizeStr || fmtSize(img.size);
@@ -2794,6 +2819,7 @@ async function startScan() {
     state.filtered = [];
     state.selected.clear();
     state.thumbnailCache.clear();
+    state.qrcodes.clear();
     state.currentPreview = null;
     state.previewIndex = -1;
     state.currentPage = 0;
@@ -2822,6 +2848,78 @@ function stopScan() {
     finishScan('已停止');
 }
 
+// ========================================
+// 二维码检测（支持批量）
+// ========================================
+const _qrCanvas = document.createElement('canvas');
+const _qrCtx = _qrCanvas.getContext('2d', { willReadFrequently: true });
+
+async function checkImageQR(img) {
+    try {
+        const dataUrl = await window.electronAPI.getImageDataUrl(img.path, 300);
+        if (!dataUrl) return false;
+        
+        const image = new Image();
+        image.src = dataUrl;
+        
+        await new Promise((resolve, reject) => {
+            image.onload = resolve;
+            image.onerror = reject;
+        });
+        
+        const w = image.naturalWidth || image.width;
+        const h = image.naturalHeight || image.height;
+        if (w === 0 || h === 0) return false;
+        
+        _qrCanvas.width = w;
+        _qrCanvas.height = h;
+        _qrCtx.drawImage(image, 0, 0, w, h);
+        
+        const imageData = _qrCtx.getImageData(0, 0, w, h);
+        const code = jsQR(imageData.data, w, h);
+        
+        if (code) {
+            state.qrcodes.add(img.path);
+            return true;
+        }
+    } catch (e) {
+        // 忽略无法处理的图片
+    }
+    return false;
+}
+
+// 批量检测二维码（用于缓存加载）
+async function detectQRCodes(images) {
+    state.qrcodes.clear();
+    for (let i = 0; i < images.length; i++) {
+        await checkImageQR(images[i]);
+        if ((i + 1) % 200 === 0) {
+            await new Promise(r => setTimeout(r, 0));
+        }
+    }
+    console.log(`[QR] 检测完成，共发现 ${state.qrcodes.size} 张二维码图片`);
+    // 检测完成后刷新
+    if (state.currentFilter === 'qrcode') {
+        applyFilter(true);
+    } else {
+        updateStats();
+    }
+}
+
+// 异步检测一批图片（不阻塞扫描流程）
+async function detectQRCodesAsync(batch) {
+    for (const img of batch) {
+        if (state.qrcodes.has(img.path)) continue;
+        await checkImageQR(img);
+    }
+    // 检测完成后更新统计，如果当前在二维码标签则刷新列表
+    if (state.currentFilter === 'qrcode') {
+        applyFilter(true);
+    } else {
+        updateStats();
+    }
+}
+
 function finishScan(msg = '扫描完成') {
     state.isScanning = false;
     
@@ -2842,6 +2940,8 @@ async function loadFromCache() {
         const cached = await window.electronAPI.loadScanCache();
         if (cached && cached.length > 0) {
             state.allImages = cached;
+            // 异步检测二维码（不阻塞 UI）
+            detectQRCodes(cached);
             applyFilter(false);
             setStatus(`已加载缓存 ${cached.length} 张图片`);
             showToast(`已加载缓存的 ${cached.length} 张图片`);
@@ -2961,6 +3061,9 @@ function bindEvents() {
             document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
             item.classList.add('active');
             state.currentFilter = item.dataset.filter;
+            // 切换标签时重置为时间倒序排序
+            state.sort = { field: 'modified', asc: false };
+            updateSortUI();
             applyFilter(false);
         });
     });
@@ -3147,56 +3250,18 @@ function bindEvents() {
         }
     });
 
+    // 扫描期间只更新统计，不渲染网格（扫描完成后统一渲染）
     window.electronAPI.onScanBatch((batch) => {
         // 直接添加到列表
         state.allImages.push(...batch);
         
-        // 更新 filtered 以包含新图片（保持排序）
-        state.filtered = [...state.allImages];
+        // 异步检测这批图片中的二维码（不阻塞扫描流程）
+        detectQRCodesAsync(batch);
         
-        // 应用当前过滤
-        const kw = searchInput.value.trim().toLowerCase();
-        state.filtered = state.filtered.filter(img => {
-            if (!isResolutionMatch(img, state.currentFilter)) return false;
-            if (kw) {
-                return img.name.toLowerCase().includes(kw) || img.path.toLowerCase().includes(kw);
-            }
-            return true;
-        });
-        
-        // 重新排序
-        const { field, asc } = state.sort;
-        state.filtered.sort((a, b) => {
-            let va = a[field], vb = b[field];
-            if (field === 'size' || field === 'width' || field === 'height') { 
-                va = +va || 0; 
-                vb = +vb || 0; 
-            }
-            else if (field === 'modified') {
-                va = new Date(va).getTime();
-                vb = new Date(vb).getTime();
-            }
-            else if (field === 'name') {
-                va = String(va || '').toLowerCase();
-                vb = String(vb || '').toLowerCase();
-            }
-            if (va < vb) return asc ? -1 : 1;
-            if (va > vb) return asc ? 1 : -1;
-            return 0;
-        });
-        
-        // 隐藏空状态
-        if (emptyState) emptyState.style.display = 'none';
-        
-        // 更新统计
+        // 更新统计（扫描中只更新数字，不渲染网格）
         els.totalCount.textContent = state.allImages.length;
         els.totalCountSidebar.textContent = state.allImages.length;
         els.countAll.textContent = state.allImages.length;
-        
-        // 渲染分页（异步，不阻塞）
-        requestAnimationFrame(() => {
-            renderGrid();
-        });
     });
 
     window.electronAPI.onScanComplete((data) => {
