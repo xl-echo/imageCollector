@@ -12,6 +12,13 @@ const fs = require('fs');
 const crypto = require('crypto');
 const log = require('electron-log');
 
+// 禁用 GPU 加速，解决 GPU 进程崩溃问题
+app.commandLine.appendSwitch('disable-gpu');
+app.commandLine.appendSwitch('disable-software-rasterizer');
+app.commandLine.appendSwitch('disable-gpu-compositing');
+app.commandLine.appendSwitch('disable-gpu-sandbox');
+app.commandLine.appendSwitch('no-sandbox');
+
 // 财神图标路径
 const GODDESS_ICON = 'C:\\Users\\ZTSK\\Downloads\\财神爷捧大金元.png';
 

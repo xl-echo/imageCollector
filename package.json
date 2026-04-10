@@ -24,6 +24,8 @@
   "build": {
     "appId": "com.imagecollector.app",
     "productName": "图片搜集器",
+    "icon": "icon.ico",
+    "afterPack": "./afterPack.js",
     "asar": true,
     "directories": {
       "output": "dist-new"
@@ -48,14 +50,26 @@
           ]
         }
       ],
-      "icon": "icon.png",
+      "icon": "icon.ico",
       "signAndEditExecutable": false
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
-      "createStartMenuShortcut": true
+      "createStartMenuShortcut": true,
+      "shortcutName": "图片搜集器",
+      "allowElevation": true,
+      "perMachine": false,
+      "deleteAppDataOnUninstall": false,
+      "displayLanguageSelector": false,
+      "installerLanguages": ["zh_CN"],
+      "language": "2052",
+      "uninstallDisplayName": "图片搜集器",
+      "runAfterFinish": true,
+      "installerIcon": "icon.ico",
+      "uninstallerIcon": "icon.ico",
+      "installerHeaderIcon": "icon.ico"
     },
     "portable": {
       "artifactName": "${productName}-${version}-portable.exe"

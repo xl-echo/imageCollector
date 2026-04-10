@@ -1361,10 +1361,10 @@
             <div class="page-size-control">
                 <span>每页</span>
                 <select id="pageSizeSelect" class="page-size-select">
-                    <option value="50" selected>50</option>
-                    <option value="100">100</option>
-                    <option value="200">200</option>
-                    <option value="500">500</option>
+                    <option value="10" selected>10</option>
+                    <option value="20">20</option>
+                    <option value="30">30</option>
+                    <option value="50">50</option>
                 </select>
                 <span>条</span>
             </div>
@@ -1617,7 +1617,7 @@ const state = {
     deleteTarget: null,
     // 分页相关
     currentPage: 0,
-    pageSize: 50,          // 每页数量
+    pageSize: 10,          // 每页数量
     totalPages: 0,
     isLoadingMore: false
 };
